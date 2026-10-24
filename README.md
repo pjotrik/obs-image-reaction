@@ -4,17 +4,29 @@
 Image that reacts to sound source.
 
 ## Installing binaries
-Download binaries from [official releases](https://github.com/scaledteam/obs-image-reaction/releases/) or more user-friendly version from [ashmanix](https://github.com/ashmanix/obs-image-reaction/releases).
+Download the latest version from [releases](https://github.com/pjotrik/obs-image-reaction/releases).
 
-For Windows, Move the contents of plugin into your obs installation directory. It usually installed into "C:\Program Files\obs-studio\".
+### Windows (OBS 30 or newer)
+1. Close OBS.
+2. Extract the `windows-x64` zip.
+3. Move the `libimage-reaction` folder into `C:\ProgramData\obs-studio\plugins\` (create the `plugins` folder if it does not exist).
 
-For GNU/Linux, put "libimage-reaction" folder into "~/.config/obs-studio/plugins/" folder.
+You should end up with `C:\ProgramData\obs-studio\plugins\libimage-reaction\bin\64bit\libimage-reaction.dll`.
 
-For Mac OS, try this port from ashmanix: https://github.com/ashmanix/obs-image-reaction .
+### GNU/Linux (Ubuntu / Debian)
+Install the `.deb` package:
+```
+sudo apt install ./libimage-reaction-*.deb
+```
+
+For other distributions, build from source (see below).
+
+### Mac OS
+Try this port from ashmanix: https://github.com/ashmanix/obs-image-reaction .
 
 ## Building and installing for GNU/Linux:
 ```
-git clone https://github.com/scaledteam/obs-image-reaction
+git clone https://github.com/pjotrik/obs-image-reaction
 cd obs-image-reaction
 mkdir build
 cd build
@@ -28,7 +40,7 @@ cp -r ../data  ~/.config/obs-studio/plugins/libimage-reaction/
 ## Building for Windows from GNU/Linux:
 You need to download MinGW, OBS Studio source code, Wine, install OBS Studio using wine.
 ```
-git clone https://github.com/scaledteam/obs-image-reaction
+git clone https://github.com/pjotrik/obs-image-reaction
 cd obs-image-reaction
 mkdir build-win
 cd build-win
