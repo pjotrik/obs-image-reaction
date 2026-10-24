@@ -11,13 +11,8 @@ Download the latest version from [releases](https://github.com/pjotrik/obs-image
 
 You should end up with `C:\ProgramData\obs-studio\plugins\libimage-reaction\bin\64bit\libimage-reaction.dll`.
 
-### GNU/Linux (Ubuntu / Debian)
-Install the `.deb` package:
-```
-sudo apt install ./libimage-reaction-*.deb
-```
-
-For other distributions, build from source (see below).
+### GNU/Linux
+There is no prebuilt Linux package yet. This plugin needs OBS 33 or newer; build it from source (see below).
 
 ### Mac OS
 Try this port from ashmanix: https://github.com/ashmanix/obs-image-reaction .
