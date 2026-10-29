@@ -13,6 +13,24 @@
 #include <media-io/audio-math.h>
 #include <plugin-support.h>
 
+/*
+ * OBS 33 replaced gs_image_file4_t with the flat gs_image_file_ex_t.
+ * Older libobs (e.g. OBS 32 from the Ubuntu PPA) only has gs_image_file4_t,
+ * so map the new names onto it. IMG() gives access to the common image fields.
+ */
+#if LIBOBS_API_MAJOR_VER < 33
+typedef gs_image_file4_t gs_image_file_ex_t;
+#define gs_image_file_ex_init gs_image_file4_init
+#define gs_image_file_ex_free gs_image_file4_free
+#define gs_image_file_ex_init_texture gs_image_file4_init_texture
+#define gs_image_file_ex_tick gs_image_file4_tick
+#define gs_image_file_ex_update_texture gs_image_file4_update_texture
+#define IMG(f) (&(f)->image3.image2.image)
+#define IMG_MEM_USAGE(f) ((f)->image3.image2.mem_usage)
+#else
+#define IMG(f) (f)
+#define IMG_MEM_USAGE(f) ((f)->mem_usage)
+#endif
 
 struct image_reaction_source {
 	obs_source_t *source;
@@ -77,7 +95,7 @@ static void image_reaction_source_load(struct image_reaction_source *context)
 			gs_image_file_ex_init_texture(if4);
 			obs_leave_graphics();
 
-			if (!if4->loaded)
+			if (!IMG(if4)->loaded)
 				obs_log(LOG_WARNING, "failed to load texture '%s'", file);
 		}
 	}
@@ -261,13 +279,13 @@ static void image_reaction_source_destroy(void *data)
 static uint32_t image_reaction_source_getwidth(void *data)
 {
 	struct image_reaction_source *context = data;
-	return MAX(context->if41.cx, context->if42.cx);
+	return MAX(IMG(&context->if41)->cx, IMG(&context->if42)->cx);
 }
 
 static uint32_t image_reaction_source_getheight(void *data)
 {
 	struct image_reaction_source *context = data;
-	return MAX(context->if41.cy, context->if42.cy);
+	return MAX(IMG(&context->if41)->cy, IMG(&context->if42)->cy);
 }
 
 static void image_reaction_source_render(void *data, gs_effect_t *effect)
@@ -280,14 +298,14 @@ static void image_reaction_source_render(void *data, gs_effect_t *effect)
 	gs_blend_function(GS_BLEND_ONE, GS_BLEND_INVSRCALPHA);
 	
 	gs_image_file_ex_t *if4 = context->loud ? &context->if42 : &context->if41;
-	if (if4->texture)
+	if (IMG(if4)->texture)
 	{
 		gs_eparam_t *const param = gs_effect_get_param_by_name(effect, "image");
-		gs_effect_set_texture_srgb(param, if4->texture);
+		gs_effect_set_texture_srgb(param, IMG(if4)->texture);
 
-		gs_draw_sprite(if4->texture, 0,
-			       if4->cx,
-			       if4->cy);
+		gs_draw_sprite(IMG(if4)->texture, 0,
+			       IMG(if4)->cx,
+			       IMG(if4)->cy);
 	}
 	//context->loud = false;
 
@@ -335,7 +353,7 @@ static void image_reaction_tick(void *data, float seconds)
 	uint64_t frame_time = obs_get_video_frame_time();
 	if (obs_source_active(context->source)) {
 		if (!context->active) {
-			if (context->if41.is_animated_gif || context->if42.is_animated_gif)
+			if (IMG(&context->if41)->is_animated_gif || IMG(&context->if42)->is_animated_gif)
 				context->last_time = frame_time;
 			context->active = true;
 		}
@@ -344,10 +362,10 @@ static void image_reaction_tick(void *data, float seconds)
 		if (context->active) {
 			for (int i = 0; i <=1; i++) {
 				gs_image_file_ex_t *if4 = i == 0 ? &context->if41 : &context->if42;
-				if (if4->is_animated_gif) {
-					if4->cur_frame = 0;
-					if4->cur_loop = 0;
-					if4->cur_time = 0;
+				if (IMG(if4)->is_animated_gif) {
+					IMG(if4)->cur_frame = 0;
+					IMG(if4)->cur_loop = 0;
+					IMG(if4)->cur_time = 0;
 
 					obs_enter_graphics();
 					gs_image_file_ex_update_texture(if4);
@@ -364,11 +382,11 @@ static void image_reaction_tick(void *data, float seconds)
 		bool animReset = i == 0 ? context->animReset1 : context->animReset2;
 		
 
-		if (context->last_time && if4->is_animated_gif) {
+		if (context->last_time && IMG(if4)->is_animated_gif) {
 			if (animReset && context->animResetTrigger) {
-				if4->cur_frame = 0;
-				if4->cur_loop = 0;
-				if4->cur_time = 0;
+				IMG(if4)->cur_frame = 0;
+				IMG(if4)->cur_loop = 0;
+				IMG(if4)->cur_time = 0;
 
 				obs_enter_graphics();
 				gs_image_file_ex_update_texture(if4);
@@ -474,7 +492,7 @@ static obs_properties_t *image_reaction_source_properties(void *data)
 uint64_t image_reaction_source_get_memory_usage(void *data)
 {
 	struct image_reaction_source *s = data;
-	return s->if41.mem_usage + s->if42.mem_usage;
+	return IMG_MEM_USAGE(&s->if41) + IMG_MEM_USAGE(&s->if42);
 }
 
 static void missing_file_callback(void *src, const char *new_path, void *data)
